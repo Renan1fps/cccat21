@@ -196,6 +196,10 @@ const config: Config = {
 
   // Whether to use watchman for file crawling
   // watchman: true,
+    transform: {
+    '^.+\\.(t|j)sx?$': '@swc/jest',
+  },
+
 };
 
 export default config;
