@@ -6,18 +6,30 @@ app.use(express.json())
 
 const accounts: any = [];
 
-app.post('/signup', async(req: Request, res: Response) => {
-    const body = req.body;
+function isValidName (name: string) {
+    return name.match(/[a-zA-Z] [a-zA-Z]+/);
+}
 
-    if(body.name.split(' ').length !==2){
+function isValidEmail (email: string) {
+    return email.match(/^(.+)\@(.+)$/);
+}
+
+app.post('/signup', async(req: Request, res: Response) => {
+    const input = req.body;
+
+    if(!isValidName(input.name)){
         res.status(422).json({message: 'Invalid name'});
     }
 
+    if(!isValidEmail(input.email)){
+        res.status(422).json({message: 'Invalid email'});
+    }
+
     const accountToSave = {
-        name: body.name,
-        email: body.email,
-        passowrd: body.passoword,
-        document: body.document,
+        name: input.name,
+        email: input.email,
+        passowrd: input.passoword,
+        document: input.document,
         accountId: randomUUID(),
     };
     accounts.push(accountToSave);
