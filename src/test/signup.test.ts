@@ -33,4 +33,17 @@ describe('Signup [integration]', () => {
         expect(responseSignup.status).toBe(422);
         expect(outputSignup.message).toBe('Invalid name');
     });
+
+    test('Should return an error if the email is invalid', async() => {
+        const inputSignup = {
+            name: 'Jhon Doe',
+            email: 'jhondoe',
+            document: '60993883893',
+            password: 'Test.1234',
+        }
+        const responseSignup = await axios.post('http://localhost:3025/signup', inputSignup);
+        const outputSignup = responseSignup.data;
+        expect(responseSignup.status).toBe(422);
+        expect(outputSignup.message).toBe('Invalid email');
+    });
 });
