@@ -14,6 +14,14 @@ function isValidEmail (email: string) {
     return email.match(/^(.+)\@(.+)$/);
 }
 
+function isValidPassword (password: string) {
+    if (password.length < 8) return false;
+    if (!password.match(/\d+/)) return false;
+    if (!password.match(/[a-z]+/)) return false;
+    if (!password.match(/[A-Z]+/)) return false;
+    return true;
+}
+
 app.post('/signup', async(req: Request, res: Response) => {
     const input = req.body;
 
@@ -25,10 +33,14 @@ app.post('/signup', async(req: Request, res: Response) => {
         res.status(422).json({message: 'Invalid email'});
     }
 
+    if(!isValidPassword(input.password)){
+        res.status(422).json({message: 'Invalid password'});
+    }
+
     const accountToSave = {
         name: input.name,
         email: input.email,
-        passowrd: input.passoword,
+        password: input.password,
         document: input.document,
         accountId: randomUUID(),
     };
