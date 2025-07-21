@@ -1,10 +1,12 @@
 import { randomUUID } from "crypto";
 import express, { Request, Response } from "express";
+import pgp from 'pg-promise';
 
 const app = express();
 app.use(express.json())
 
 const accounts: any = [];
+const connection = pgp()('postgres://postgres:123456@localhost:5432/app');
 
 function isValidName (name: string) {
     return name.match(/[a-zA-Z] [a-zA-Z]+/);
@@ -44,14 +46,22 @@ app.post('/signup', async(req: Request, res: Response) => {
         document: input.document,
         accountId: randomUUID(),
     };
-    accounts.push(accountToSave);
+    await connection.query('insert into ccca.account (account_id, name, password, email, document) values ($1, $2, $3, $4, $5)', [
+        accountToSave.accountId, 
+        accountToSave.name,
+        accountToSave.password,
+        accountToSave.email,
+        accountToSave.document,
+    ]);
+    //accounts.push(accountToSave); <-- in memory
     res.json({ accountId: accountToSave.accountId });
 });
 
 app.get('/accounts/:accountId', async(req: Request, res: Response) => {
     const accountId = req.params.accountId
-    const account = accounts.find((item: any) => item.accountId === accountId);
-    res.json(account)
+    // const account = accounts.find((item: any) => item.accountId === accountId); <--- in memory
+    const [account] = await connection.query('select * from ccca.account where account_id = $1', [accountId]);
+    res.json(account);
 });
 
 app.listen(3025);
