@@ -8,6 +8,11 @@ const accounts: any = [];
 
 app.post('/signup', async(req: Request, res: Response) => {
     const body = req.body;
+
+    if(body.name.split(' ').length !==2){
+        res.status(422).json({message: 'Invalid name'});
+    }
+
     const accountToSave = {
         name: body.name,
         email: body.email,
