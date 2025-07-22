@@ -63,7 +63,7 @@ describe('Signup [integration]', () => {
 
 describe('Deposit [integration]', ()=> {
 
-    test.only('Must create an deposit correctly', async() => {
+    test('Must create a deposit correctly', async() => {
         const inputSignup = {
             name: 'Jhon Doe',
             email: 'jhondoe@gmail.com',
@@ -84,7 +84,35 @@ describe('Deposit [integration]', ()=> {
         expect(outputGetAccount.assets[0].assetId).toBe(inputDeposit.assetId);
          expect(outputGetAccount.assets[0].quantity).toBe(inputDeposit.quantity);
     });
+});
 
-    
+describe('Withdraw [integration]', ()=> {
 
+    test('Must create a Withdraw correctly', async() => {
+        const inputSignup = {
+            name: 'Jhon Doe',
+            email: 'jhondoe@gmail.com',
+            document: '60993883893',
+            password: 'Test.1234',
+        }
+        const responseSignup = await axios.post('http://localhost:3025/signup', inputSignup);
+        const outputSignup = responseSignup.data;
+        const inputDeposit = {
+            accountId: outputSignup.accountId,
+            assetId: 'BTC',
+            quantity: 10,
+        };
+        await axios.post('http://localhost:3025/deposit', inputDeposit);
+        const inputWithdraw = {
+            accountId: outputSignup.accountId,
+            assetId: 'BTC',
+            quantity: 5
+        }
+        await axios.post('http://localhost:3025/withdraw', inputWithdraw);
+        const responseGetAccount = await axios.get(`http://localhost:3025/accounts/${outputSignup.accountId}`);
+        const outputGetAccount = responseGetAccount.data;
+        expect(outputGetAccount.assets).toHaveLength(1);
+        expect(outputGetAccount.assets[0].assetId).toBe(inputDeposit.assetId);
+         expect(outputGetAccount.assets[0].quantity).toBe(inputDeposit.quantity - inputWithdraw.quantity);
+    });
 });
