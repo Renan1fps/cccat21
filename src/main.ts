@@ -57,10 +57,32 @@ app.post('/signup', async(req: Request, res: Response) => {
     res.json({ accountId: accountToSave.accountId });
 });
 
+
+app.post('/deposit', async(req: Request, res: Response) => {
+    const input = req.body;
+    const assetToSave = {
+        assetId: input.assetId,
+        quantity: input.quantity,
+        accountId: input.accountId
+    };
+    await connection.query('insert into ccca.account_asset (account_id, asset_id, quantity) values ($1, $2, $3)', [
+        assetToSave.accountId, 
+        assetToSave.assetId,
+        assetToSave.quantity
+    ]);
+    res.status(201).end();
+});
+
+
+
 app.get('/accounts/:accountId', async(req: Request, res: Response) => {
     const accountId = req.params.accountId
     // const account = accounts.find((item: any) => item.accountId === accountId); <--- in memory
-    const [account] = await connection.query('select * from ccca.account where account_id = $1', [accountId]);
+    const [[account], asset] = await Promise.all([
+        connection.query('select * from ccca.account where account_id = $1', [accountId]),
+        connection.query('select * from ccca.account_asset where  account_id = $1', [accountId]),
+    ]);
+    account.assets = asset.map((item: any) => ({ assetId: item.asset_id, quantity: parseFloat(item.quantity) }));
     res.json(account);
 });
 
