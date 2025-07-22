@@ -73,7 +73,13 @@ app.post('/deposit', async(req: Request, res: Response) => {
     res.status(201).end();
 });
 
-
+app.post('/withdraw', async(req: Request, res: Response) => {
+    const input = req.body;
+    const [asset] = await connection.query('select * from ccca.account_asset where account_id = $1', [input.accountId]);
+    const quantity = parseFloat(asset.quantity) - input.quantity;
+    await connection.query('update ccca.account_asset set quantity = $1 where account_id = $2 and asset_id = $3', [quantity, input.accountId, input.assetId]);
+    res.status(201).end();
+});
 
 app.get('/accounts/:accountId', async(req: Request, res: Response) => {
     const accountId = req.params.accountId
@@ -83,7 +89,7 @@ app.get('/accounts/:accountId', async(req: Request, res: Response) => {
         connection.query('select * from ccca.account_asset where  account_id = $1', [accountId]),
     ]);
     account.assets = asset.map((item: any) => ({ assetId: item.asset_id, quantity: parseFloat(item.quantity) }));
-    res.json(account);
+    res.json({ accountId: account.account_id, name: account.name, email: account.email, document: account.document, assets: account.assets });
 });
 
 app.listen(3025);
