@@ -60,3 +60,31 @@ describe('Signup [integration]', () => {
         expect(outputSignup.message).toBe('Invalid password');
     });
 });
+
+describe('Deposit [integration]', ()=> {
+
+    test.only('Must create an deposit correctly', async() => {
+        const inputSignup = {
+            name: 'Jhon Doe',
+            email: 'jhondoe@gmail.com',
+            document: '60993883893',
+            password: 'Test.1234',
+        }
+        const responseSignup = await axios.post('http://localhost:3025/signup', inputSignup);
+        const outputSignup = responseSignup.data;
+        const inputDeposit = {
+            accountId: outputSignup.accountId,
+            assetId: 'BTC',
+            quantity: 10,
+        };
+        await axios.post('http://localhost:3025/deposit', inputDeposit);
+        const responseGetAccount = await axios.get(`http://localhost:3025/accounts/${outputSignup.accountId}`);
+        const outputGetAccount = responseGetAccount.data;
+        expect(outputGetAccount.assets).toHaveLength(1);
+        expect(outputGetAccount.assets[0].assetId).toBe(inputDeposit.assetId);
+         expect(outputGetAccount.assets[0].quantity).toBe(inputDeposit.quantity);
+    });
+
+    
+
+});
